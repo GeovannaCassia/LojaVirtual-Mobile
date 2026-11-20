@@ -1,4 +1,4 @@
-# Urban Store
+# Aplicativo Roupas
 
 Aplicativo de e-commerce de moda urbana feito em React Native com Expo.
 
