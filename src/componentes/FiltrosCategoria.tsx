@@ -78,6 +78,7 @@ export const FiltrosCategoria: React.FC<FilterChipsProps> = ({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
         {chips}
@@ -93,6 +94,12 @@ export const FiltrosCategoria: React.FC<FilterChipsProps> = ({
 };
 
 const styles = StyleSheet.create({
+  scroll: {
+    // O ScrollView padrão usa flexGrow/flexShrink 1; sem esse override ele
+    // é comprimido pelo FlatList e corta os chips em telas menores.
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   scrollContent: {
     flexDirection: 'row',
     gap: ESPACAMENTO.sm,
