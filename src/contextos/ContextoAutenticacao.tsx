@@ -31,7 +31,7 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
   const [user, setUser] = useState<Usuario | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session
+  // Restaura a sessão salva, se existir.
   useEffect(() => {
     const loadSession = async () => {
       try {
@@ -44,7 +44,7 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
           setUser(JSON.parse(savedUser));
         }
       } catch (e) {
-        console.error('Error loading session:', e);
+        console.error('Erro ao carregar a sessão:', e);
       } finally {
         setIsLoading(false);
       }
@@ -57,15 +57,16 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
     } catch (e) {
-      console.error('Error saving user:', e);
+      console.error('Erro ao salvar o usuário:', e);
     }
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // Simulate API call
+    // Simula o tempo de resposta de um servidor.
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Demo: accept any email/password, but use mock user data
+    // Projeto acadêmico: qualquer e-mail e senha válidos entram, e os dados
+    // complementares vêm do usuário de exemplo.
     if (!email || !password) {
       return { success: false, message: 'Preencha todos os campos.' };
     }
@@ -116,7 +117,8 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
     if (!email) {
       return { success: false, message: 'Informe seu e-mail.' };
     }
-    // Simulate sending email
+    // Sem backend de e-mail, a resposta é sempre a mesma para não expor quais
+    // endereços estão cadastrados.
     return { success: true, message: 'Se o e-mail existir, enviaremos instruções de recuperação.' };
   }, []);
 
@@ -132,7 +134,6 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
       ...address,
       id: `addr-${Date.now()}`,
     };
-    // If first address, make it default
     const isFirst = user.addresses.length === 0;
     const updatedAddresses = [...user.addresses, { ...newAddress, isDefault: isFirst }];
     await updateProfile({ addresses: updatedAddresses });
@@ -147,7 +148,6 @@ export const ProvedorAutenticacao: React.FC<{ children: ReactNode }> = ({ childr
   const removeAddress = useCallback(async (addressId: string) => {
     if (!user) return;
     const updatedAddresses = user.addresses.filter((a) => a.id !== addressId);
-    // If removed was default, make first one default
     const hasDefault = updatedAddresses.some((a) => a.isDefault);
     if (!hasDefault && updatedAddresses.length > 0) {
       updatedAddresses[0].isDefault = true;

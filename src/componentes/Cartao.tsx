@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ViewProps, ViewStyle, Image, ImageStyle, ImageSourcePropType } from 'react-native';
+import { StyleSheet, View, ViewProps, ViewStyle, Image, ImageSourcePropType } from 'react-native';
 import { CORES, RAIO, ESPACAMENTO } from '../constantes/tema';
 
 interface CardProps extends ViewProps {

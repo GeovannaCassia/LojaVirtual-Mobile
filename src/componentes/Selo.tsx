@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { CORES, RAIO, ESPACAMENTO, TIPOGRAFIA } from '../constantes/tema';
+import { CORES, RAIO } from '../constantes/tema';
 
 interface BadgeProps {
   children: React.ReactNode;

@@ -14,8 +14,8 @@ export interface Produto {
   name: string;
   description: string;
   price: number;
-  originalPrice?: number; // for discounts
-  images: string[]; // URLs or local assets
+  originalPrice?: number; // preço antes do desconto
+  images: string[]; // URLs ou imagens locais
   category: string;
   categoryId: string;
   variants: VarianteProduto[];
@@ -32,7 +32,7 @@ export interface Categoria {
 }
 
 export interface ItemCarrinho {
-  id: string; // unique cart item id
+  id: string; // id do item dentro do carrinho
   productId: string;
   productName: string;
   productImage: string;
@@ -40,9 +40,9 @@ export interface ItemCarrinho {
   color: string;
   colorHex: string;
   size: string;
-  price: number; // price at time of adding
+  price: number; // preço no momento em que foi adicionado
   quantity: number;
-  stock: number; // current stock for validation
+  stock: number; // estoque usado na validação
 }
 
 export interface Endereco {
@@ -64,7 +64,7 @@ export interface Usuario {
   email: string;
   avatar?: string;
   addresses: Endereco[];
-  favorites: string[]; // product IDs
+  favorites: string[]; // ids dos produtos favoritados
 }
 
 export interface Pedido {

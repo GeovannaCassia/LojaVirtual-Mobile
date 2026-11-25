@@ -39,7 +39,7 @@ export const ProvedorPedidos: React.FC<{ children: ReactNode }> = ({ children })
           setPedidos(loadedOrders);
         }
       } catch (e) {
-        console.error('Error loading orders:', e);
+        console.error('Erro ao carregar os pedidos:', e);
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +63,7 @@ export const ProvedorPedidos: React.FC<{ children: ReactNode }> = ({ children })
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(novosPedidos));
     } catch (e) {
-      console.error('Error saving order:', e);
+      console.error('Erro ao salvar o pedido:', e);
     }
 
     return pedido;

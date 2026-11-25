@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Produto, Categoria, EstadoFiltro, OpcaoOrdenacao } from '../tipos';
+import { Produto, Categoria, EstadoFiltro } from '../tipos';
 import { PRODUTOS_SIMULADOS, CATEGORIAS_SIMULADAS } from '../constantes/dadosSimulados';
 import { buscarProdutosDaApi } from '../servicos/apiProdutos';
 
@@ -51,7 +51,7 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const isLoading = isLoadingFilters || isLoadingProducts;
 
-  // Load persisted filters
+  // Os filtros escolhidos pelo usuário continuam valendo na próxima visita.
   useEffect(() => {
     const loadFilters = async () => {
       try {
@@ -60,7 +60,7 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
           setFilterStateInternal(JSON.parse(saved));
         }
       } catch (e) {
-        console.error('Error loading filters:', e);
+        console.error('Erro ao carregar os filtros:', e);
       } finally {
         setIsLoadingFilters(false);
       }
@@ -70,10 +70,7 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Busca o catálogo na API. Se der ruim, a loja continua aberta com os
   // produtos locais e a tela mostra o aviso com a opção de tentar de novo.
-  const reloadProducts = useCallback(async () => {
-    setIsLoadingProducts(true);
-    setError(null);
-
+  const carregarProdutos = useCallback(async () => {
     try {
       const produtosDaApi = await buscarProdutosDaApi();
       setProducts(produtosDaApi);
@@ -86,11 +83,16 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  useEffect(() => {
-    reloadProducts();
-  }, [reloadProducts]);
+  const reloadProducts = useCallback(() => {
+    setIsLoadingProducts(true);
+    setError(null);
+    void carregarProdutos();
+  }, [carregarProdutos]);
 
-  // Persist filters
+  useEffect(() => {
+    void carregarProdutos();
+  }, [carregarProdutos]);
+
   const setFilterState = useCallback((filters: Partial<EstadoFiltro>) => {
     setFilterStateInternal((prev) => {
       const next = { ...prev, ...filters };
@@ -104,22 +106,19 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
     AsyncStorage.setItem(STORAGE_KEYS.FILTERS, JSON.stringify(DEFAULT_FILTERS)).catch(console.error);
   }, []);
 
-  // Se o filtro salvo apontar para uma categoria que não existe no catálogo
-  // carregado, volta para "Todos" em vez de deixar a lista sempre vazia.
-  useEffect(() => {
-    if (isLoading || !filterState.categoryId) return;
-    if (!categories.some((c) => c.id === filterState.categoryId)) {
-      setFilterState({ categoryId: null });
-    }
-  }, [isLoading, categories, filterState.categoryId, setFilterState]);
+  // Um filtro salvo pode apontar para uma categoria que não veio no catálogo.
+  // Nesse caso ele é ignorado, em vez de deixar a lista sempre vazia.
+  const filterStateEfetivo = useMemo(() => {
+    const categoriaExiste =
+      !filterState.categoryId || categories.some((c) => c.id === filterState.categoryId);
+    return categoriaExiste ? filterState : { ...filterState, categoryId: null };
+  }, [filterState, categories]);
 
-  // Filtering and sorting logic
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Search query
-    if (filterState.searchQuery.trim()) {
-      const query = filterState.searchQuery.toLowerCase();
+    if (filterStateEfetivo.searchQuery.trim()) {
+      const query = filterStateEfetivo.searchQuery.toLowerCase();
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
@@ -129,26 +128,22 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
       );
     }
 
-    // Filtro por categoria
-    if (filterState.categoryId) {
-      result = result.filter((p) => p.categoryId === filterState.categoryId);
+    if (filterStateEfetivo.categoryId) {
+      result = result.filter((p) => p.categoryId === filterStateEfetivo.categoryId);
     }
 
-    // Price range
-    if (filterState.minPrice !== null) {
-      result = result.filter((p) => p.price >= (filterState.minPrice || 0));
+    if (filterStateEfetivo.minPrice !== null) {
+      result = result.filter((p) => p.price >= (filterStateEfetivo.minPrice || 0));
     }
-    if (filterState.maxPrice !== null) {
-      result = result.filter((p) => p.price <= (filterState.maxPrice || Infinity));
-    }
-
-    // Avaliacao
-    if (filterState.minRating > 0) {
-      result = result.filter((p) => p.rating >= filterState.minRating);
+    if (filterStateEfetivo.maxPrice !== null) {
+      result = result.filter((p) => p.price <= (filterStateEfetivo.maxPrice || Infinity));
     }
 
-    // Sorting
-    switch (filterState.sortBy) {
+    if (filterStateEfetivo.minRating > 0) {
+      result = result.filter((p) => p.rating >= filterStateEfetivo.minRating);
+    }
+
+    switch (filterStateEfetivo.sortBy) {
       case 'price_asc':
         result.sort((a, b) => a.price - b.price);
         break;
@@ -159,12 +154,13 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
         result.sort((a, b) => b.rating - a.rating);
         break;
       case 'newest':
-        // Assuming newer products have higher IDs or we could add a createdAt field
+        // A API não informa a data de cadastro, então o id maior é a
+        // aproximação mais próxima de "mais recente".
         result.sort((a, b) => b.id.localeCompare(a.id));
         break;
       case 'relevance':
       default:
-        // Relevance: prioritize higher rating, then discount, then review count
+        // Semelhança: maior desconto, depois melhor nota e mais avaliações.
         result.sort((a, b) => {
           const aDiscount = a.originalPrice ? (a.originalPrice - a.price) / a.originalPrice : 0;
           const bDiscount = b.originalPrice ? (b.originalPrice - b.price) / b.originalPrice : 0;
@@ -176,9 +172,9 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     return result;
-  }, [products, filterState]);
+  }, [products, filterStateEfetivo]);
 
-  // Featured products for home (high rating + discount)
+  // Destaques da home: produtos com desconto e boa nota.
   const featuredProducts = useMemo(() => {
     const emPromocao = products
       .filter((p) => p.originalPrice && p.rating >= 4.5)
@@ -228,7 +224,7 @@ export const ProvedorLoja: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         error,
         reloadProducts,
-        filterState,
+        filterState: filterStateEfetivo,
         setFilterState,
         clearFilters,
         getProductById,

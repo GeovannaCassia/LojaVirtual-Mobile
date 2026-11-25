@@ -2,7 +2,7 @@
 
 Aplicativo de e-commerce de moda urbana feito em React Native com Expo.
 
-- **Repositório:** [github.com/seu-usuario/projeto-aplicacoes-moveis](https://github.com/GeovannaCassia/LojaVirtual-Mobile) 
+- **Repositório:** [https://github.com/GeovannaCassia/LojaVirtual-Mobile](https://github.com/GeovannaCassia/LojaVirtual-Mobile) 
 
 ## Sobre o projeto
 
@@ -73,6 +73,3 @@ src/
 
 - Não há backend próprio: usuários (nome, e-mail e senha) e pedidos ficam
   gravados no AsyncStorage do aparelho.
-- A documentação completa de requisitos está em `PROJETO_SOLUCAO.md`.
-- Para gerar o arquivo de entrega, compacte a pasta do projeto em `.zip`
-  (sem a pasta `node_modules`).

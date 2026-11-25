@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CORES, RAIO, ESPACAMENTO, TIPOGRAFIA } from '../constantes/tema';
+import { CORES, RAIO, ESPACAMENTO } from '../constantes/tema';
 
 interface BaseModalProps {
   visible: boolean;

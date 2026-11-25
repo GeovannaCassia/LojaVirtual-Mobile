@@ -1,19 +1,19 @@
 export const CORES = {
-  primary: '#2563EB',       // Blue primary (trust, commerce)
+  primary: '#2563EB',
   primaryDark: '#1D4ED8',
   primaryLight: '#DBEAFE',
-  secondary: '#7C3AED',     // Purple accent
-  background: '#F8FAFC',    // Light gray background
-  surface: '#FFFFFF',       // White cards
-  textPrimary: '#1E293B',   // Dark slate
-  textSecondary: '#64748B', // Medium slate
-  textMuted: '#94A3B8',     // Light slate
-  success: '#10B981',       // Green
-  warning: '#F59E0B',       // Amber
-  danger: '#EF4444',        // Red
-  divider: '#E2E8F0',       // Borders
-  shadow: '#0F172A',        // Shadow base
-  star: '#FBBF24',          // Gold for ratings
+  secondary: '#7C3AED',
+  background: '#F8FAFC',
+  surface: '#FFFFFF',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  textMuted: '#94A3B8',
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  divider: '#E2E8F0',
+  shadow: '#0F172A',
+  star: '#FBBF24',
 };
 
 export const ESPACAMENTO = {

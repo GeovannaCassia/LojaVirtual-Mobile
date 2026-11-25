@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ItemCarrinho, Produto, VarianteProduto } from '../tipos';
+import { calcularTotaisCarrinho } from '../utilitarios/calculosCarrinho';
 
 interface DadosContextoCarrinho {
   items: ItemCarrinho[];
@@ -20,26 +21,23 @@ interface DadosContextoCarrinho {
 const ContextoCarrinho = createContext<DadosContextoCarrinho>({} as DadosContextoCarrinho);
 
 const STORAGE_KEY = '@store_cart';
-const LIMITE_FRETE_GRATIS = 299.90;
-const BASE_SHIPPING = 19.90;
 
 export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<ItemCarrinho[]>([]);
   const itemsRef = useRef<ItemCarrinho[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Persist cart and keep the ref in sync for mutations that happen before the next render.
+  // O ref garante que alterações feitas antes do próximo render não se percam.
   const persistCart = useCallback(async (newItems: ItemCarrinho[]) => {
     itemsRef.current = newItems;
     setItems(newItems);
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
     } catch (e) {
-      console.error('Error saving cart:', e);
+      console.error('Erro ao salvar o carrinho:', e);
     }
   }, []);
 
-  // Load cart from storage
   useEffect(() => {
     const loadCart = async () => {
       try {
@@ -50,9 +48,8 @@ export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }
           itemsRef.current = loadedItems;
           setItems(loadedItems);
         }
-        // Sem carrinho salvo o app começa vazio, como numa loja de verdade.
       } catch (e) {
-        console.error('Error loading cart:', e);
+        console.error('Erro ao carregar o carrinho:', e);
       } finally {
         setIsLoading(false);
       }
@@ -60,13 +57,8 @@ export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }
     loadCart();
   }, []);
 
-  // Computed values
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal >= LIMITE_FRETE_GRATIS ? 0 : BASE_SHIPPING;
-  const total = subtotal + shipping;
+  const { itemCount, subtotal, shipping, total } = calcularTotaisCarrinho(items);
 
-  // Add item to cart
   const addItem = useCallback(
     async (product: Produto, variant: VarianteProduto, quantity: number) => {
       if (!Number.isFinite(quantity) || quantity < 1) {
@@ -126,7 +118,6 @@ export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }
     [persistCart]
   );
 
-  // Remove item from cart
   const removeItem = useCallback(
     async (cartItemId: string) => {
       const newItems = itemsRef.current.filter((item) => item.id !== cartItemId);
@@ -135,7 +126,6 @@ export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }
     [persistCart]
   );
 
-  // Update quantity
   const updateQuantity = useCallback(
     async (cartItemId: string, quantity: number) => {
       if (quantity < 1) {
@@ -160,12 +150,10 @@ export const ProvedorCarrinho: React.FC<{ children: ReactNode }> = ({ children }
     [persistCart, removeItem]
   );
 
-  // Clear cart
   const clearCart = useCallback(async () => {
     await persistCart([]);
   }, [persistCart]);
 
-  // Helpers
   const getItemQuantity = useCallback(
     (productId: string, variantId: string) => {
       const item = items.find((i) => i.productId === productId && i.variantId === variantId);

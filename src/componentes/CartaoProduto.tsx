@@ -4,14 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  ImageStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Produto } from '../tipos';
-import { Cartao, CartaoImagem } from './Cartao';
+import { CartaoImagem } from './Cartao';
 import { formatarMoeda, calcularDesconto, obterStatusEstoque } from '../utilitarios/formatadores';
-import { CORES, ESPACAMENTO, RAIO, TIPOGRAFIA } from '../constantes/tema';
+import { CORES, ESPACAMENTO, RAIO } from '../constantes/tema';
 
 interface ProductCardProps {
   product: Produto;
@@ -134,7 +132,7 @@ export const CartaoProduto: React.FC<ProductCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  // Grid variant
+  // Versão em grade
   gridCard: {
     backgroundColor: CORES.surface,
     borderRadius: RAIO.lg,
@@ -248,7 +246,7 @@ const styles = StyleSheet.create({
     marginLeft: ESPACAMENTO.xs,
   },
 
-  // List variant
+  // Versão em lista
   listCard: {
     flexDirection: 'row',
     backgroundColor: CORES.surface,

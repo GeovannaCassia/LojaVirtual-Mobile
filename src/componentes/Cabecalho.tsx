@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ParametrosPilhaRaiz } from '../tipos';
-import { CORES, RAIO, ESPACAMENTO } from '../constantes/tema';
+import { CORES, ESPACAMENTO } from '../constantes/tema';
 
 interface HeaderProps {
   title?: string;
